@@ -1,0 +1,23 @@
+name: Deploy to Walrus
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Deploy to Walrus
+      uses: walrus-actions/deploy@v1
+      with:
+        site-path: './'
+        network: 'testnet'
+      env:
+          SUI_ADDRESS: ${{ vars.SUI_ADDRESS }}
+          SUI_KEYSTORE: ${{ secrets.SUI_KEYSTORE }}
