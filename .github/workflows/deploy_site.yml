@@ -22,3 +22,29 @@ jobs:
         env:
           SUI_ADDRESS: ${{ vars.SUI_ADDRESS }}
           SUI_KEYSTORE: ${{ secrets.SUI_KEYSTORE }}
+
+  publish-walrus:
+    name: Update Walrus Site
+    runs-on: ubuntu-ghcloud
+    if: ${{ github.event_name == 'push' || inputs.update-walrus-site == true }}
+    env:
+      # Colors don't seem to work properly with the multiline commands.
+      NO_COLOR: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-mdbook
+        with:
+          with_linkcheck: "false"
+      - uses: ./.github/actions/set-up-walrus
+        with:
+          SUI_ADDRESS: "${{ vars.SUI_ADDRESS }}"
+          SUI_KEYSTORE: "${{ secrets.SUI_KEYSTORE }}"
+          WALRUS_CONFIG: "${{ vars.WALRUS_CONFIG }}"
+
+      - name: Update Walrus Site
+        run: >
+          RUST_LOG=site_builder=debug,walrus=debug,info
+          site-builder
+          update build/html ${{ vars.WALRUS_SITE_OBJECT }}
+          --epochs 183
+          --force
